@@ -3,11 +3,11 @@ package me.polishkrowa.BetterMsgPlus;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static me.hsgamer.hscore.bukkit.utils.MessageUtils.sendMessage;
 
@@ -46,8 +46,13 @@ public class ToggleCommand extends Command {
 
     @Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
-        if (args.length <= 1) {
-            return super.tabComplete(sender, alias, args);
+        if (args.length == 1) {
+            String start = args[0].trim().toLowerCase(Locale.ROOT);
+            Stream<String> stream = Bukkit.getOnlinePlayers().stream().map(Player::getName);
+            if (!start.isEmpty()) {
+                stream = stream.filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start));
+            }
+            return stream.collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }
