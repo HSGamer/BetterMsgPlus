@@ -1,84 +1,56 @@
 package me.polishkrowa.BetterMsgPlus;
 
-import net.md_5.bungee.api.chat.TranslatableComponent;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class TellCommand implements CommandExecutor, TabCompleter {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+public class TellCommand extends Command {
+    private final MsgPlus plugin;
 
+    public TellCommand(MsgPlus plugin) {
+        super("tell", "Command to private message players", "/tell <player> <message>", Collections.singletonList("msg"));
+        this.plugin = plugin;
+    }
+
+    @Override
+    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
         if (args.length < 1) {
-            if (label.equalsIgnoreCase("tell"))
-                sender.sendMessage(ChatColor.RED + "No player name was entered. Correct usage: /tell <player-name> <message>");
-            else
-                sender.sendMessage(ChatColor.RED + "No player name was entered. Correct usage: /msg <player-name> <message>");
-            return true;
+            sender.sendMessage(ChatColor.RED + "No player name was entered. Correct usage: /msg <player-name> <message>");
+            return false;
         }
 
         if (args.length < 2) {
             sender.sendMessage(ChatColor.RED + "No message was entered !");
-            return true;
+            return false;
         }
 
-        HumanEntity to = Bukkit.getPlayerExact(args[0]);
+        Player to = Bukkit.getPlayerExact(args[0]);
         if (to == null) {
             sender.sendMessage(ChatColor.RED + "No Player Found !");
-            return true;
+            return false;
         }
 
-        String message = StringUtils.join(args, " ");
-        message = message.trim();
-        message = message.substring(args[0].length() + 1);
+        String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-        //  "commands.message.display.outgoing": "You whisper to %s: %s",
-        //  "commands.message.display.incoming": "%s whispers to you: %s",
+        Utils.sendMessage(to, sender, message);
 
-        TranslatableComponent outgoing = new TranslatableComponent( "commands.message.display.outgoing" );
-        outgoing.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-        outgoing.addWith(args[0]);
-        outgoing.addWith(message);
-        sender.spigot().sendMessage(outgoing);
-
-        TranslatableComponent incoming = new TranslatableComponent( "commands.message.display.incoming" );
-        incoming.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-        incoming.addWith(sender.getName());
-        incoming.addWith(message);
-        to.spigot().sendMessage(incoming);
-
-        if (to instanceof Player && sender instanceof Player) {
-            Player player = (Player) sender;
-            Player receiver = (Player) to;
-
-            MsgPlus.lastReceived.put(player.getUniqueId(), receiver.getUniqueId());
-            MsgPlus.lastReceived.put(receiver.getUniqueId(), player.getUniqueId());
-        } else {
-            MsgPlus.lastReceived.put(to.getUniqueId(), null);
-        }
-
+        plugin.getLastReceived().put(sender, to);
+        plugin.getLastReceived().put(to, sender);
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> returns = new ArrayList<>();
+    public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
         if (args.length <= 1) {
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                returns.add(player.getName());
-            });
-            return returns;
+            return super.tabComplete(sender, alias, args);
+        } else {
+            return Collections.emptyList();
         }
-
-        return returns;
     }
 }

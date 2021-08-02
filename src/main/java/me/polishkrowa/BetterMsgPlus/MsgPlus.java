@@ -1,27 +1,21 @@
 package me.polishkrowa.BetterMsgPlus;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import me.hsgamer.hscore.bukkit.baseplugin.BasePlugin;
+import org.bukkit.command.CommandSender;
 
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public final class MsgPlus extends JavaPlugin {
-
-    //player, lastReceived
-    public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
+public final class MsgPlus extends BasePlugin {
+    private final Map<CommandSender, CommandSender> lastReceived = new ConcurrentHashMap<>();
 
     @Override
-    public void onEnable() {
-        // Plugin startup logic
-        this.getCommand("tell").setExecutor(new TellCommand());
-        this.getCommand("tell").setTabCompleter(new TellCommand());
-
-        this.getCommand("reply").setExecutor(new ReplyCommand());
-        this.getCommand("reply").setTabCompleter(new ReplyCommand());
+    public void enable() {
+        registerCommand(new ReplyCommand(this));
+        registerCommand(new TellCommand(this));
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
+    public Map<CommandSender, CommandSender> getLastReceived() {
+        return lastReceived;
     }
 }

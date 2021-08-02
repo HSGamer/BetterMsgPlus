@@ -1,68 +1,39 @@
 package me.polishkrowa.BetterMsgPlus;
 
-import net.md_5.bungee.api.chat.TranslatableComponent;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
-public class ReplyCommand implements CommandExecutor, TabCompleter {
+public class ReplyCommand extends Command {
+    private final MsgPlus plugin;
+
+    public ReplyCommand(MsgPlus plugin) {
+        super("reply", "Command to reply to another player's private message(s)", "/reply <message>", Collections.singletonList("r"));
+        this.plugin = plugin;
+    }
+
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Console can't reply to messages !");
-            return true;
-        }
-        Player player = (Player) sender;
-
-        if (!MsgPlus.lastReceived.containsKey(player.getUniqueId()) || MsgPlus.lastReceived.get(player.getUniqueId()) == null) {
-            player.sendMessage(ChatColor.RED + "You have no one to reply to !");
-            return true;
+    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+        if (!plugin.getLastReceived().containsKey(sender)) {
+            sender.sendMessage(ChatColor.RED + "You have no one to reply to !");
+            return false;
         }
 
         if (args.length < 1) {
             sender.sendMessage(ChatColor.RED + "No message was entered !");
-            return true;
+            return false;
         }
 
-
-        String message = StringUtils.join(args, " ");
+        String message = String.join(" ", args);
         message = message.trim();
 
-        //  "commands.message.display.outgoing": "You whisper to %s: %s",
-        //  "commands.message.display.incoming": "%s whispers to you: %s",
-        Player to = Bukkit.getPlayer(MsgPlus.lastReceived.get(player.getUniqueId()));
+        CommandSender to = plugin.getLastReceived().get(sender);
+        Utils.sendMessage(to, sender, message);
 
-        TranslatableComponent outgoing = new TranslatableComponent( "commands.message.display.outgoing" );
-        outgoing.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-        outgoing.addWith(to.getName());
-        outgoing.addWith(message);
-        sender.spigot().sendMessage(outgoing);
-
-        TranslatableComponent incoming = new TranslatableComponent( "commands.message.display.incoming" );
-        incoming.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-        incoming.addWith(sender.getName());
-        incoming.addWith(message);
-        to.spigot().sendMessage(incoming);
-
-
-        MsgPlus.lastReceived.put(player.getUniqueId(), to.getUniqueId());
-        MsgPlus.lastReceived.put(to.getUniqueId(), player.getUniqueId());
-
+        plugin.getLastReceived().put(sender, to);
+        plugin.getLastReceived().put(to, sender);
         return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> returns = new ArrayList<>();
-        return returns;
     }
 }
