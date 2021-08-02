@@ -16,15 +16,18 @@ public class TellCommand extends Command {
     public TellCommand(MsgPlus plugin) {
         super("tell", "Command to private message players", "/tell <player> <message>", Collections.singletonList("msg"));
         this.plugin = plugin;
+        setPermission(Permissions.TELL.getName());
     }
 
     @Override
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+        if (!testPermission(sender)) {
+            return false;
+        }
         if (args.length < 1) {
             sender.sendMessage(ChatColor.RED + "No player name was entered. Correct usage: /msg <player-name> <message>");
             return false;
         }
-
         if (args.length < 2) {
             sender.sendMessage(ChatColor.RED + "No message was entered !");
             return false;
@@ -37,7 +40,6 @@ public class TellCommand extends Command {
         }
 
         String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-
         Utils.sendMessage(to, sender, message);
 
         plugin.getLastReceived().put(sender, to);
