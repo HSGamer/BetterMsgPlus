@@ -17,7 +17,7 @@ public class TellCommand extends Command {
     private final MsgPlus plugin;
 
     public TellCommand(MsgPlus plugin) {
-        super("tell", "Command to private message players", "/tell <player> <message>", Collections.singletonList("msg"));
+        super("tell", "Command to private message players", "/tell <player> <message>", Arrays.asList("msg", "message", "whisper", "w"));
         this.plugin = plugin;
         setPermission(Permissions.TELL.getName());
     }

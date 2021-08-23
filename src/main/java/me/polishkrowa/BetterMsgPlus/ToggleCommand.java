@@ -15,7 +15,7 @@ public class ToggleCommand extends Command {
     private final MsgPlus plugin;
 
     public ToggleCommand(MsgPlus plugin) {
-        super("msgtoggle", "Toggle receiving private messages", "/msgtoggle", Arrays.asList("telltoggle", "rtoggle"));
+        super("msgtoggle", "Toggle receiving private messages", "/msgtoggle", Arrays.asList("wtoggle", "whispertoggle", "telltoggle", "rtoggle"));
         this.plugin = plugin;
         setPermission(Permissions.TOGGLE.getName());
     }
